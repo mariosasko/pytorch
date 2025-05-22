@@ -3,11 +3,13 @@
 
 import io
 import os
+import posixpath
 from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Optional, TYPE_CHECKING, Union
 
+from fsspec.utils import can_be_local
 from fsspec.core import url_to_fs
 
 from torch.distributed.checkpoint._extension import StreamTransformExtension
@@ -57,7 +59,7 @@ class FileSystem(FileSystemBase):
     def concat_path(
         self, path: Union[str, os.PathLike], suffix: str
     ) -> Union[str, os.PathLike]:
-        return os.path.join(path, suffix)
+        return (os.path.join if can_be_local(path) else posixpath.join)(path, suffix)
 
     def init_path(
         self, path: Union[str, os.PathLike], **kwargs
